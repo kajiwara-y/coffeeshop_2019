@@ -3,6 +3,7 @@
 // session persistence, api calls, and more.
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
+const request = require('request');
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -78,6 +79,9 @@ const OrderRequestIntentHandler = {
             const product_price = "200";
             const speechText = `${menu} ${amount}つですね、お支払いは${product_price *
                 amount}円になります。ご利用ありがとうございます。`;
+
+            // discordに注文情報を通知する
+            sendDiscordMessage(`${menu}が ${amount} つ注文されました。準備をお願いします。`)
             // 注文した商品情報を永続アトリビュートに書き込む
             const attr = await handlerInput.attributesManager.getPersistentAttributes();
             attr.lastOrder = menu;
@@ -91,6 +95,21 @@ const OrderRequestIntentHandler = {
 
     }
 };
+const sendDiscordMessage = function(message) {
+    const request = require('request');
+    const discordWebHookUri = 'https://discordapp.com/api/webhooks/590278284491882536/IIFCbkyCfJmqI4PE5PLLzMDgDYvXRU6TzE8Gd_bQH-lHbg68ENBGmn2rS2G9utOBwfLC'
+    const options = {
+        uri: discordWebHookUri,
+        headers: {
+            "Content-type": "application/json",
+        },
+        json: {
+            "username": "AlexaSkill DrinkShop",
+            "content": message
+        }
+    };
+    request.post(options, function(error, response, body) { });
+}
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return handlerInput.requestEnvelope.request.type === 'IntentRequest'
