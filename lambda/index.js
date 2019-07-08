@@ -22,13 +22,32 @@ const OrderRequestIntentHandler = {
             && handlerInput.requestEnvelope.request.intent.name === 'OrderIntent';
     },
     handle(handlerInput) {
-        let menu = handlerInput.requestEnvelope.request.intent.slots.menu.value;
-        let amount = handlerInput.requestEnvelope.request.intent.slots.amount.value;
-        const speechText = `${menu} ${amount}つですね、ありがとうございます。`;
-        return handlerInput.responseBuilder
-            .speak(speechText)
-            //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
-            .getResponse();
+        // スロットの取得
+        let menuSlot = Alexa.getSlot(handlerInput.requestEnvelope, "menu");
+
+        // ステータスコードの取得
+        let status = menuSlot.resolutions.resolutionsPerAuthority[0].status.code;
+        if (status === "ER_SUCCESS_MATCH") {
+            // ステータスコードを調べて、MATCHだったら代表値を取得してmenuにセットする
+            let menu = menuSlot.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+            let amount = Alexa.getSlotValue(handlerInput.requestEnvelope, "amount");
+            const product_price = "200";
+            const speechText = `${menu} ${amount}つですね、お支払いは${product_price *
+                amount}円になります。ご利用ありがとうございます。`;
+            return handlerInput.responseBuilder
+                .speak(speechText)
+                //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
+                .getResponse();
+        } else {
+            // ステータスコードを調べて、MATCHでない場合は商品提供できないため、その旨を伝える。
+            let menu = Alexa.getSlotValue(handlerInput.requestEnvelope, "menu");
+            const sorryMessage = `申し訳無いのですが、 ${menu} はご提供できません。 コーヒーはいかがですか？`
+            const repromptText = 'コーヒーはいかがですか？'
+            return handlerInput.responseBuilder
+                .speak(sorryMessage)
+                .reprompt(repromptText)
+                .getResponse();
+        }
     }
 };
 const HelpIntentHandler = {
