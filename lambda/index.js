@@ -2,14 +2,21 @@
 // Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 // session persistence, api calls, and more.
 const Alexa = require('ask-sdk-core');
+const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
     },
-    handle(handlerInput) {
-        const speechText = 'ドリンクショップへようこそ';
+    async handle(handlerInput) {
+        let speechText = 'ドリンクショップへようこそ';
         const repromptText = '注文は何にしますか？'
+        // 永続アトリビュートから情報を取得
+        const attr = await handlerInput.attributesManager.getPersistentAttributes();
+        const lastOrder = attr.lastOrder;
+        if (lastOrder !== undefined) {
+            speechText += `前回は ${lastOrder}を注文しましたね。`;
+        }
         return handlerInput.responseBuilder
             .speak(speechText + repromptText)
             .reprompt(repromptText)
@@ -21,7 +28,7 @@ const OrderRequestIntentHandler = {
         return handlerInput.requestEnvelope.request.type === 'IntentRequest'
             && handlerInput.requestEnvelope.request.intent.name === 'OrderIntent';
     },
-    handle(handlerInput) {
+    async handle(handlerInput) {
         let attributes = handlerInput.attributesManager.getSessionAttributes();
         let menu = Alexa.getSlotValue(handlerInput.requestEnvelope, "menu") || attributes.menu;
         let amount = Alexa.getSlotValue(handlerInput.requestEnvelope, "amount") || attributes.amount;
@@ -71,6 +78,11 @@ const OrderRequestIntentHandler = {
             const product_price = "200";
             const speechText = `${menu} ${amount}つですね、お支払いは${product_price *
                 amount}円になります。ご利用ありがとうございます。`;
+            // 注文した商品情報を永続アトリビュートに書き込む
+            const attr = await handlerInput.attributesManager.getPersistentAttributes();
+            attr.lastOrder = menu;
+            handlerInput.attributesManager.setPersistentAttributes(attr);
+            await handlerInput.attributesManager.savePersistentAttributes();
             return handlerInput.responseBuilder
                 .speak(speechText)
                 //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
@@ -166,4 +178,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         IntentReflectorHandler) // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
     .addErrorHandlers(
         ErrorHandler)
+    .withPersistenceAdapter(
+        new persistenceAdapter.S3PersistenceAdapter(
+            { bucketName: process.env.S3_PERSISTENCE_BUCKET }))
     .lambda();
