@@ -1,0 +1,18 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:040241532234:function:af900a02-ccf2-4c05-a6fc-618e1bfae75d:Release_0"
+        }
+      }
+    },
+    "publishingInformation": {
+      "locales": {
+        "ja-JP": {
+          "name": "coffee_shop_review"
+        }
+      }
+    }
+  }
+}
