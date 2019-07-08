@@ -33,28 +33,58 @@
                         "justifyContent": "end",
                         "item": [
                             {
-                                "type": "Image",
-                                "width": "33vw",
-                                "height": "50vh",
-                                "paddingLeft": "20",
-                                "paddingRight": "20",
-                                "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/001.png",
-                                "align": "left",
-                                "borderRadius": "50"
+                                "type": "TouchWrapper",
+                                "item": {
+                                    "type": "Image",
+                                    "width": "33vw",
+                                    "height": "50vh",
+                                    "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/001.png",
+                                    "align": "left",
+                                    "borderRadius": "50"
+                                },
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": [
+                                        "001",
+                                        "コーヒー"
+                                    ]
+                                }
                             },
                             {
-                                "type": "Image",
-                                "width": "33vw",
-                                "height": "50vh",
-                                "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/003.png",
-                                "borderRadius": "50"
+                                "type": "TouchWrapper",
+                                "item": [
+                                    {
+                                        "type": "Image",
+                                        "width": "33vw",
+                                        "height": "50vh",
+                                        "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/003.png",
+                                        "borderRadius": "50"
+                                    }
+                                ],
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": [
+                                        "003",
+                                        "カフェラテ"
+                                    ]
+                                }
                             },
                             {
-                                "type": "Image",
-                                "width": "33vw",
-                                "height": "50vh",
-                                "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/004.png",
-                                "borderRadius": "50"
+                                "type": "TouchWrapper",
+                                "item": {
+                                    "type": "Image",
+                                    "width": "33vw",
+                                    "height": "50vh",
+                                    "source": "https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/004.png",
+                                    "borderRadius": "50"
+                                },
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": [
+                                        "004",
+                                        "オレンジジュース"
+                                    ]
+                                }
                             }
                         ]
                     },

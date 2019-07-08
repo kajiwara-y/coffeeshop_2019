@@ -131,6 +131,31 @@ const OrderRequestIntentHandler = {
 
     }
 };
+
+const TouchEventHandler = {
+    canHandle(handlerInput) {
+        return ((handlerInput.requestEnvelope.request.type === 'Alexa.Presentation.APL.UserEvent' &&
+            (handlerInput.requestEnvelope.request.source.handler === 'Press' ||
+                handlerInput.requestEnvelope.request.source.handler === 'onPress')));
+    },
+    handle(handlerInput) {
+        // TcouhWrapperのargumentsで指定したパラメータを取得する
+        let attributes = handlerInput.attributesManager.getSessionAttributes();
+        const choice_id = handlerInput.requestEnvelope.request.arguments[0];
+        const choice_menu = handlerInput.requestEnvelope.request.arguments[1];
+        let menu = choice_menu
+        let menu_id = choice_id;
+        attributes.menu_id = menu_id;
+        attributes.menu = menu;
+        handlerInput.attributesManager.setSessionAttributes(attributes);
+        const speechOutput = 'おいくつ注文しますか？'
+        return handlerInput.responseBuilder
+            .speak(speechOutput)
+            .getResponse();
+    }
+};
+
+
 const sendDiscordMessage = function(message) {
     const request = require('request');
     const discordWebHookUri = 'https://discordapp.com/api/webhooks/590278284491882536/IIFCbkyCfJmqI4PE5PLLzMDgDYvXRU6TzE8Gd_bQH-lHbg68ENBGmn2rS2G9utOBwfLC'
@@ -227,6 +252,7 @@ exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
         OrderRequestIntentHandler,
+        TouchEventHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
         SessionEndedRequestHandler,
