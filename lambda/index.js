@@ -4,7 +4,11 @@
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 const request = require('request');
-
+const util = require("./util.js")
+const APLDocs = {
+    launch: require('./documents/launchRequest.json'),
+    order: require('./documents/order.json')
+};
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
@@ -18,7 +22,18 @@ const LaunchRequestHandler = {
         if (lastOrder !== undefined) {
             speechText += `前回は ${lastOrder}を注文しましたね。`;
         }
-        return handlerInput.responseBuilder
+        const responseBuilder = handlerInput.responseBuilder;
+        // APL対応デバイスかの確認を行う
+        if (util.supportsAPL(handlerInput)) {
+            // APL対応デバイスなら画面表示を行う
+            responseBuilder.addDirective({
+                type: 'Alexa.Presentation.APL.RenderDocument',
+                version: '1.0',
+                document: APLDocs.launch,
+                datasources: {}
+            });
+        }
+        return responseBuilder
             .speak(speechText + repromptText)
             .reprompt(repromptText)
             .getResponse();
@@ -33,6 +48,7 @@ const OrderRequestIntentHandler = {
         let attributes = handlerInput.attributesManager.getSessionAttributes();
         let menu = Alexa.getSlotValue(handlerInput.requestEnvelope, "menu") || attributes.menu;
         let amount = Alexa.getSlotValue(handlerInput.requestEnvelope, "amount") || attributes.amount;
+        let menu_id = attributes.menu_id;
         // menuが判明していない
         if (menu === undefined) {
             attributes.amount = amount;
@@ -53,9 +69,10 @@ const OrderRequestIntentHandler = {
             let status = menuSlot.resolutions.resolutionsPerAuthority[0].status.code;
             if (status === "ER_SUCCESS_MATCH") {
                 // 数量が定義されていなかった
+                const menu_id = menuSlot.resolutions.resolutionsPerAuthority[0].values[0].value.id;
+                attributes.menu_id = menu_id;
                 if (amount === undefined) {
                     attributes.menu = menu;
-                    handlerInput.attributesManager.setSessionAttributes(attributes);
                     const speechOutput = 'おいくつ注文しますか？'
                     const reprompt = 'おいくつ注文しますか？'
                     return handlerInput.responseBuilder
@@ -63,6 +80,7 @@ const OrderRequestIntentHandler = {
                         .reprompt(reprompt)
                         .getResponse();
                 }
+                handlerInput.attributesManager.setSessionAttributes(attributes);
             } else {
                 // ステータスコードを調べて、MATCHでない場合は商品提供できないため、その旨を伝える。
                 let menu = Alexa.getSlotValue(handlerInput.requestEnvelope, "menu");
@@ -87,7 +105,25 @@ const OrderRequestIntentHandler = {
             attr.lastOrder = menu;
             handlerInput.attributesManager.setPersistentAttributes(attr);
             await handlerInput.attributesManager.savePersistentAttributes();
-            return handlerInput.responseBuilder
+            const responseBuilder = handlerInput.responseBuilder;
+            // APL対応デバイスかの確認を行う
+            if (util.supportsAPL(handlerInput)) {
+                // APL対応デバイスなら画面表示を行う
+                responseBuilder.addDirective({
+                    type: 'Alexa.Presentation.APL.RenderDocument',
+                    Version: '1.0',
+                    document: APLDocs.order,
+                    datasources: {
+                        orderData: {
+                            properties: {
+                                orderMenuImage: `https://alexa-tama-img.s3-ap-northeast-1.amazonaws.com/${menu_id}.png`,
+                                orderMenuString: menu
+                            }
+                        }
+                    }
+                });
+            }
+            return responseBuilder
                 .speak(speechText)
                 //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
                 .getResponse();
