@@ -17,10 +17,24 @@
                 },
                 {
                     "name": "OrderIntent",
-                    "slots": [],
+                    "slots": [
+                        {
+                            "name": "menu",
+                            "type": "menu_lst"
+                        },
+                        {
+                            "name": "amount",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
                     "samples": [
-                        "コーヒーをください",
-                        "コーヒー頂戴"
+                        "{amount} つ",
+                        "{menu}",
+                        "{menu} {amount} つ",
+                        "{menu} {amount}",
+                        "{menu} を {amount} つ注文して",
+                        "{menu} を {amount} つ",
+                        "{menu} を {amount} つください"
                     ]
                 },
                 {
@@ -28,7 +42,43 @@
                     "samples": []
                 }
             ],
-            "types": []
+            "types": [
+                {
+                    "name": "menu_lst",
+                    "values": [
+                        {
+                            "id": "004",
+                            "name": {
+                                "value": "オレンジジュース"
+                            }
+                        },
+                        {
+                            "id": "003",
+                            "name": {
+                                "value": "エスプレッソ"
+                            }
+                        },
+                        {
+                            "id": "002",
+                            "name": {
+                                "value": "カフェラテ"
+                            }
+                        },
+                        {
+                            "id": "001",
+                            "name": {
+                                "value": "ホットコーヒー",
+                                "synonyms": [
+                                    "ブレンド",
+                                    "あったかいコーヒー",
+                                    "温かいコーヒー",
+                                    "コーヒー"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     },
     "version": "1"

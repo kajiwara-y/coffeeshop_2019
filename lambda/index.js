@@ -22,7 +22,9 @@ const OrderRequestIntentHandler = {
             && handlerInput.requestEnvelope.request.intent.name === 'OrderIntent';
     },
     handle(handlerInput) {
-        const speechText = 'コーヒーですね、注文ありがとうございます。';
+        let menu = handlerInput.requestEnvelope.request.intent.slots.menu.value;
+        let amount = handlerInput.requestEnvelope.request.intent.slots.amount.value;
+        const speechText = `${menu} ${amount}つですね、ありがとうございます。`;
         return handlerInput.responseBuilder
             .speak(speechText)
             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
